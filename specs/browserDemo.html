@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>UltiViewer example</title>
+       <script type="text/javascript" src="three.min.js"></script>
+      <script src="../OBJParser.js"></script>
+  </head>
+<body>
+
+  <script>
+
+    function fetchData(uri)
+    {
+      var oReq = new XMLHttpRequest();
+      oReq.responseType = "arraybuffer";
+      //oReq.onload = displayData;
+      oReq.open("get", uri, true);
+      oReq.send();
+    }
+    fetchData("data/test.obj")
+
+  </script>  
+</body>
+</html>
