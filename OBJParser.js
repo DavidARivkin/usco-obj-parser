@@ -2,10 +2,7 @@
  * @author mrdoob / http://mrdoob.com/
  * @author kaosat-dev
  */
-var isNode = typeof global !== "undefined" && {}.toString.call(global) == '[object global]';
-
-if(isNode) THREE = require( 'three' ); 
-
+var detectEnv = require("composite-detect");
 
 THREE.OBJParser = function ( manager ) {
 
@@ -293,4 +290,4 @@ THREE.OBJParser.prototype = {
 
 };
 
-if (isNode) module.exports = THREE.OBJParser;
+if (detectEnv.isModule) module.exports = THREE.OBJParser;
