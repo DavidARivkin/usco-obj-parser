@@ -6,14 +6,13 @@
     "type": "git",
     "url": "http://github.com/usco/usco-obj-parser.git"
   },
-  "main": "ObjParser.js",
-  "dependencies": {},
+  "main": "obj-parser.js",
+  "dependencies": {
+    "three-js": "git://github.com/usco/three.js.git",
+    "composite-detect": "0.0.3"
+  },
   "devDependencies": {
-    "jasmine-node": "",
-    "three": "~0.58.10",
-    "composite-detect": "0.0.3",
-    "npm": "~1.3.17",
-    "install": "~0.1.7"
+    "jasmine-node": ""
   },
   "scripts": {
     "test": "jasmine-node specs/"

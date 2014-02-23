@@ -1,5 +1,5 @@
 THREE = require("three");
-OBJParser = require("../OBJParser");
+OBJParser = require("../obj-parser");
 fs = require("fs");
 
 describe("OBJ parser tests", function() {
