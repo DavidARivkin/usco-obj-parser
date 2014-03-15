@@ -3,7 +3,9 @@
  * @author kaosat-dev
  */
 var detectEnv = require("composite-detect");
-if(detectEnv.isModule) var THREE = require("three");
+
+if(detectEnv.isNode) var THREE = require("three");
+if(detectEnv.isBrowser) var THREE = window.THREE;
 
 
 OBJParser = function ( manager ) {
