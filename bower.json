@@ -5,6 +5,7 @@
   "dependencies": {
   },
   "ignore": [
-    "specs/"
+    "specs/",
+    "./obj-parser.js"
   ]
 }
