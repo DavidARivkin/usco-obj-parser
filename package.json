@@ -15,7 +15,7 @@
     "jasmine-node": "",
     "grunt": "~0.4.2",
     "grunt-browserify": "~1.2.12",
-    "workerify": "~0.2.3",
+    "workerify": "git://github.com/shama/workerify",
     "grunt-bump": "0.0.13"
   },
   "scripts": {

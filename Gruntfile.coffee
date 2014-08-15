@@ -8,7 +8,8 @@ module.exports = (grunt) ->
         src: ["./obj-parser.js"]
         dest: "lib/obj-parser.js"
         options:
-          external: ["composite-detect","three"]
+          transform: ["workerify"]
+          external: ["composite-detect","three","q"]
           alias: ["./obj-parser.js:obj-parser"]
     bump:
       options:
