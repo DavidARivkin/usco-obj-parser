@@ -24,10 +24,10 @@ OBJParser.prototype.parse = function (data, parameters) {
   var parameters = parameters || {};
   var useBuffers = parameters.useBuffers !== undefined ? parameters.useBuffers : true;
   var useWorker = parameters.useWorker !== undefined ?  parameters.useWorker && detectEnv.isBrowser: true;
-  
+
   var deferred = Q.defer();
 	var self = this;
-	
+
 	if ( useWorker ) {
 	  var worker = new Worker( "./obj-worker.js" );
 		worker.onmessage = function( event ) {
@@ -56,43 +56,44 @@ OBJParser.prototype.parse = function (data, parameters) {
 	  data = this.createModelBuffers( data );
 	  deferred.resolve( data );
 	}
-	
-  return deferred;	
+
+  return deferred;
 }
 
 //TODO: potential candidate for re-use across parsers
 OBJParser.prototype.createModelBuffers = function ( modelData ) {
   console.log("creating model buffers",modelData);
-  
+
   var faces = modelData.faceCount;
   var colorSize =3;
-  
+
   var vertices = new Float32Array( faces * 3 * 3 );
 	var normals = new Float32Array( faces * 3 * 3 );
 	var colors = new Float32Array( faces *3 * colorSize );
 	var indices = new Uint32Array( faces * 3  );
-	
+
 	vertices.set( modelData.position );
-	//normals.set( modelData.normal );
+	normals.set( modelData.normal );
 	indices.set( modelData.indices );
 	//colors.set( modelData.vcolors );
 
   var geometry = new THREE.BufferGeometry();
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
-	//geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
+	geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
   geometry.addAttribute( 'index', new THREE.BufferAttribute( indices, 1 ) );
   //geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, colorSize ) );
-  
+
   if(this.recomputeNormals)
   {
+    console.log("fooNormals");
     //TODO: only do this, if no normals were specified???
     geometry.computeFaceNormals();
     geometry.computeVertexNormals();
   }
-  
+
   /*var vs = require('./vertShader.vert')();
   var fs = require('./fragShader.frag')();
-  
+
   var material = new THREE.RawShaderMaterial( {
 
 					uniforms: {
@@ -104,9 +105,8 @@ OBJParser.prototype.createModelBuffers = function ( modelData ) {
 					transparent: true
 
 				} );*/
-
-  var color = this.defaultColor ;
-  var material = new this.defaultMaterialType({color:0XFFFFFF,vertexColors: THREE.VertexColors});
+  var color = this.defaultColor;
+  var material = new this.defaultMaterialType({color:color, specular: 0xffffff, shininess: 10, shading: THREE.FlatShading});//,vertexColors: THREE.VertexColors
   var mesh = new THREE.Mesh( geometry, material );
   return mesh
 }
@@ -117,7 +117,7 @@ OBJParser.prototype._parse = function( text )
   var object = new THREE.Object3D();
   var geometry, material, mesh;
 	var face_offset = 0;
-	
+
   // create mesh if no objects in text
 	if ( /^o /gm.test( text ) === false ) {
 
@@ -144,7 +144,7 @@ OBJParser.prototype._parse = function( text )
 		var face_pattern2 = /f( +(\d+)\/(\d+))( +(\d+)\/(\d+))( +(\d+)\/(\d+))( +(\d+)\/(\d+))?/;
 		// f vertex/uv/normal vertex/uv/normal vertex/uv/normal ...
 		var face_pattern3 = /f( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))?/;
-		// f vertex//normal vertex//normal vertex//normal ... 
+		// f vertex//normal vertex//normal vertex//normal ...
 		var face_pattern4 = /f( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))?/
 
 		var lines = text.split( '\n' );
@@ -208,7 +208,7 @@ OBJParser.prototype._parse = function( text )
 				if (!(geometry === undefined)) {
 					face_offset = face_offset + geometry.vertices.length;
 				}
-				
+
 				geometry = new THREE.Geometry();
 				material = new THREE.MeshLambertMaterial();
 
@@ -235,7 +235,7 @@ OBJParser.prototype._parse = function( text )
 		for ( var i = 0, l = object.children.length; i < l; i ++ ) {
 			var geometry = object.children[ i ].geometry;
 		}
-		
+
 		return object;
 }
 
@@ -251,8 +251,8 @@ OBJParser.prototype._parse = function( text )
 		function face3( a, b, c, normals ) {
 			return new THREE.Face3( a, b, c, normals );
 		}
-		
-		
+
+
 		function add_face( a, b, c, normals_inds, geometry ,face_offset, normals) {
 			if ( normals_inds === undefined ) {
 				geometry.faces.push( face3(
@@ -273,7 +273,7 @@ OBJParser.prototype._parse = function( text )
 				) );
 			}
 		}
-		
+
 		function add_uvs( a, b, c, geometry , uvs) {
 			geometry.faceVertexUvs[ 0 ].push( [
 				uvs[ parseInt( a ) - 1 ].clone(),
@@ -281,7 +281,7 @@ OBJParser.prototype._parse = function( text )
 				uvs[ parseInt( c ) - 1 ].clone()
 			] );
 		}
-		
+
 		function handle_face_line(faces, uvs, normals_inds, geometry,face_offset, normals, uvs) {
 			if ( faces[ 3 ] === undefined ) {
 				add_face( faces[ 0 ], faces[ 1 ], faces[ 2 ], normals_inds, geometry,face_offset, normals );

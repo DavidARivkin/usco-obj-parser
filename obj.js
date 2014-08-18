@@ -2,9 +2,8 @@ var OBJ = function () {
 
 }
 
-OBJ.prototype._handle_face_line =function( data, rIndices, indices, faceCount )
+OBJ.prototype._handle_face_line =function( data, rIndices, indices )
 {
-  var indexDataLen = 0;
   var tmpIdx = [];
   for(var i=0;i<rIndices.length;i++)
   {
@@ -12,14 +11,10 @@ OBJ.prototype._handle_face_line =function( data, rIndices, indices, faceCount )
     tmpIdx.push( parseInt(data[ idx ]) -1 );
   }
   if ( data[ 3 ] === undefined ) {
-    indexDataLen = 3;
     indices.push( tmpIdx[0],tmpIdx[1],tmpIdx[3] );
-    faceCount+=1;
   }
   else
   {
-    indexDataLen = 4;
-    faceCount+=2;
     indices.push( tmpIdx[0],tmpIdx[1],tmpIdx[3], tmpIdx[1],tmpIdx[2],tmpIdx[3] );
   }
 }
@@ -37,14 +32,14 @@ OBJ.prototype.getData = function(text)
 		var face_pattern2 = /f( +(\d+)\/(\d+))( +(\d+)\/(\d+))( +(\d+)\/(\d+))( +(\d+)\/(\d+))?/;
 		// f vertex/uv/normal vertex/uv/normal vertex/uv/normal ...
 		var face_pattern3 = /f( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))( +(\d+)\/(\d+)\/(\d+))?/;
-		// f vertex//normal vertex//normal vertex//normal ... 
+		// f vertex//normal vertex//normal vertex//normal ...
 		var face_pattern4 = /f( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))( +(\d+)\/\/(\d+))?/
 
-		
-		text = text.replace( /\\\r\n/g, '' ); // handles line continuations 
+
+		text = text.replace( /\\\r\n/g, '' ); // handles line continuations
 		var lines = text.split( '\n' );
-		
-		
+
+
 		var vertices = [];
 		var normals  = [];
 		var uvs      = [];
@@ -52,7 +47,11 @@ OBJ.prototype.getData = function(text)
 		var normIndices = [];
 		var uvIndices = [];
 		var faceCount = 0;
-		
+
+    var objects = [];
+    var currentObject = {};
+    var currentMaterial = {};
+
 		for ( var i = 0; i < lines.length; i ++ ) {
 			var line = lines[ i ];
 			line = line.trim();
@@ -71,72 +70,44 @@ OBJ.prototype.getData = function(text)
 				uvs.push( parseFloat( result[ 1 ] ), parseFloat( result[ 2 ] ) );
 			} else if ( ( result = face_pattern1.exec( line ) ) !== null ) {
 				// ["f 1 2 3", "1", "2", "3", undefined]
-				console.log("result v1", result);
-				this._handle_face_line(result,[1,2,3,4], indices, faceCount );
-				//0,1,3 --> 1,2,4
-				//1,2,3 --> 2,3,4
-				//handle_face_line([ result[ 1 ], result[ 2 ], result[ 3 ], result[ 4 ] ], geometry);
+				//console.log("result v1");
+				this._handle_face_line(result,[1,2,3,4], indices );
 				//faces, uvs, normals_inds, geometry,face_offset, normals, uvs
 			} else if ( ( result = face_pattern2.exec( line ) ) !== null ) {
 				// ["f 1/1 2/2 3/3", " 1/1", "1", "1", " 2/2", "2", "2", " 3/3", "3", "3", undefined, undefined, undefined]
-				//indices.push( result[ 2 ], result[ 5 ], result[ 8 ] );
-				uvIndices.push( result[ 3 ], result[ 6 ], result[ 9 ], result[ 12 ] );
 				//console.log("result v2");
-				/*handle_face_line(
-					[ result[ 2 ], result[ 5 ], result[ 8 ], result[ 11 ] ], //faces
-					[ result[ 3 ], result[ 6 ], result[ 9 ], result[ 12 ] ] //uv
-					, geometry, face_offset, normals, uvs
-				);*/
-				this._handle_face_line(result,[2,5,8,11], indices, faceCount );
-				
+				this._handle_face_line(result,[2,5,8,11], indices );//2,5,8,11//possible winding order change of for some stuff11,8,5,2
+				this._handle_face_line(result,[3,6,9,12], uvIndices );
 			} else if ( ( result = face_pattern3.exec( line ) ) !== null ) {
 				// ["f 1/1/1 2/2/2 3/3/3", " 1/1/1", "1", "1", "1", " 2/2/2", "2", "2", "2", " 3/3/3", "3", "3", "3", undefined, undefined, undefined, undefined]
 				//console.log("result v3");
-				uvIndices.push( result[ 3 ], result[ 7 ], result[ 11 ], result[ 15 ] );
-				normIndices.push(  result[ 4 ], result[ 8 ], result[ 12 ], result[ 16 ] );
-				
-				//var tmpIdx = [parseInt(result[ 2 ])-1, parseInt(result[ 6 ])-1, parseInt(result[ 10 ])-1, parseInt(result[ 14 ])-1];
-				//indices.push( tmpIdx[0],tmpIdx[1],tmpIdx[3], tmpIdx[1],tmpIdx[2],tmpIdx[3] );
-				
-				this._handle_face_line(result,[2,6,10,14], indices, faceCount );
-				
-				/*handle_face_line(
-					[ result[ 2 ], result[ 6 ], result[ 10 ], result[ 14 ] ], //faces
-					[ result[ 3 ], result[ 7 ], result[ 11 ], result[ 15 ] ], //uv
-					[ result[ 4 ], result[ 8 ], result[ 12 ], result[ 16 ] ] //normal
-					, geometry, face_offset, normals, uvs
-				);*/
-				
+				this._handle_face_line(result,[2,6,10,14], indices );//2,6,10,14
+				this._handle_face_line(result,[4,8,12,16], normIndices );
+				this._handle_face_line(result,[3,7,11,15], uvIndices );
 			} else if ( ( result = face_pattern4.exec( line ) ) !== null ) {
 				// ["f 1//1 2//2 3//3", " 1//1", "1", "1", " 2//2", "2", "2", " 3//3", "3", "3", undefined, undefined, undefined]
-				/*handle_face_line(
-					[ result[ 2 ], result[ 5 ], result[ 8 ], result[ 11 ] ], //faces
-					[ ], //uv
-					[ result[ 3 ], result[ 6 ], result[ 9 ], result[ 12 ] ] //normal
-					, geometry, face_offset, normals, uvs
-				);*/
-				indices.push( result[ 2 ], result[ 5 ], result[ 8 ] );
-
+				this._handle_face_line(result,[2,5,8,11], indices );
+				this._handle_face_line(result,[3,6,9,12], normIndices );
 			} else if ( /^o /.test( line ) ) {
 				// object
-				/*if (!(geometry === undefined)) {
-					face_offset = face_offset + geometry.vertices.length;
+				console.log("object")
+				if (!(geometry === undefined)) {
+					face_offset = face_offset + vertices.length;
 				}
-				
-				geometry = new THREE.Geometry();
-				material = new THREE.MeshLambertMaterial();
 
-				mesh = new THREE.Mesh( geometry, material );
-				mesh.name = line.substring( 2 ).trim();
-				object.add( mesh );
+        currentMaterial = {};
+        currentObject = {};
+        currentObject.name = line.substring( 2 ).trim();
+				objects.push( currentObject );
 
-				verticesCount = 0;*/
+				verticesCount = 0;
 
 			} else if ( /^g /.test( line ) ) {
 				// group
+				console.log("group");
 			} else if ( /^usemtl /.test( line ) ) {
 				// material
-				//TODO: fix thismaterial.name = line.substring( 7 ).trim();
+        currentMaterial.name = line.substring( 7 ).trim();
 			} else if ( /^mtllib /.test( line ) ) {
 				// mtl file
 			} else if ( /^s /.test( line ) ) {
@@ -145,7 +116,7 @@ OBJ.prototype.getData = function(text)
 				// console.log( "OBJParser: Unhandled line " + line );
 			}
 		}
-		
+
 		return {
 		  position :vertices,
 		  normal   :normals,
@@ -153,6 +124,21 @@ OBJ.prototype.getData = function(text)
 		  indices   :indices,
 		  faceCount: indices.length/3
 		}
+}
+
+/*
+  extracts data based on indices since obj has different indices for normals, uvs etc, while webgl does not
+*/
+OBJ.prototype._unindexData=function( data )
+{
+  var resultPositions = [];
+  var resultNormals = [];
+  var resultUv      = [];
+
+  for(var i=0;i<data.indices.length;i++)
+  {
+    
+  }
 }
 
 module.exports = OBJ;
