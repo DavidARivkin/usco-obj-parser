@@ -12,9 +12,11 @@ obj-parser.html
 
 How to generate browser/polymer.js version (with require support):
 ------------------------------------------------------------------
-Type: 
+Type:
 
       grunt build-browser-lib
 
 This will generate the correct browser(ified) version of the source in the lib folder
 
+TODO:
+ - [ ] full attributes support (normals, uvs)

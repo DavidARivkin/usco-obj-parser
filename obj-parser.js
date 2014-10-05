@@ -26,7 +26,20 @@ OBJParser.prototype.parse = function (data, parameters) {
   var useWorker = parameters.useWorker !== undefined ?  parameters.useWorker && detectEnv.isBrowser: true;
 
   var deferred = Q.defer();
+  var rootObject = new THREE.Object3D();
 	var self = this;
+
+  //useWorker = false;
+
+  function onDataLoaded( data )
+  {
+      for(var i=0;i<data.objects.length;i++)
+      {
+        var modelData = data.objects[i];
+        var model = self.createModelBuffers( modelData );
+			  rootObject.add( model );
+      }
+  }
 
 	if ( useWorker ) {
 	  var worker = new Worker( "./obj-worker.js" );
@@ -35,8 +48,9 @@ OBJParser.prototype.parse = function (data, parameters) {
 		  {
 		    var data = event.data.data;
 		    console.log("data recieved in main thread", data);
-		    var model = self.createModelBuffers( data );
-        deferred.resolve( model );
+		    //var model = self.createModelBuffers( data );
+        onDataLoaded( data );
+        deferred.resolve( rootObject );
       }
       else if("progress" in event.data)
       {
@@ -52,9 +66,11 @@ OBJParser.prototype.parse = function (data, parameters) {
 	else
 	{
 	  data = new OBJ().getData( data );
-	  console.log("raw data", data);
+    onDataLoaded( data );
+    deferred.resolve( rootObject );
+	  /*console.log("raw data", data);
 	  data = this.createModelBuffers( data );
-	  deferred.resolve( data );
+	  deferred.resolve( data );*/
 	}
 
   return deferred;
@@ -62,33 +78,36 @@ OBJParser.prototype.parse = function (data, parameters) {
 
 //TODO: potential candidate for re-use across parsers
 OBJParser.prototype.createModelBuffers = function ( modelData ) {
-  console.log("creating model buffers",modelData);
+  console.log("creating model buffers",modelData, "faces",modelData.faceCount);
 
   var faces = modelData.faceCount;
   var colorSize =3;
 
   var vertices = new Float32Array( faces * 3 * 3 );
 	var normals = new Float32Array( faces * 3 * 3 );
-	var colors = new Float32Array( faces *3 * colorSize );
+	//var colors = new Float32Array( faces *3 * colorSize );
 	var indices = new Uint32Array( faces * 3  );
 
-	vertices.set( modelData.position );
+	/*vertices.set( modelData.position );
 	normals.set( modelData.normal );
-	indices.set( modelData.indices );
-	//colors.set( modelData.vcolors );
+	indices.set( modelData.indices );*/
+
+  vertices.set( modelData._attributes.position );
+	normals.set( modelData._attributes.normal );
+	indices.set( modelData._attributes.indices );
+
 
   var geometry = new THREE.BufferGeometry();
 	geometry.addAttribute( 'position', new THREE.BufferAttribute( vertices, 3 ) );
 	geometry.addAttribute( 'normal', new THREE.BufferAttribute( normals, 3 ) );
   geometry.addAttribute( 'index', new THREE.BufferAttribute( indices, 1 ) );
-  //geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, colorSize ) );
 
   if(this.recomputeNormals)
   {
     console.log("fooNormals");
     //TODO: only do this, if no normals were specified???
-    geometry.computeFaceNormals();
-    geometry.computeVertexNormals();
+    //geometry.computeFaceNormals();
+    //geometry.computeVertexNormals();
   }
 
   /*var vs = require('./vertShader.vert')();
