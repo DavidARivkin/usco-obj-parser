@@ -24,14 +24,13 @@ OBJParser.prototype.parse = function (data, parameters) {
   var parameters = parameters || {};
   var useBuffers = parameters.useBuffers !== undefined ? parameters.useBuffers : true;
   var useWorker = parameters.useWorker !== undefined ?  parameters.useWorker && detectEnv.isBrowser: true;
+  var rawBuffers = parameters.rawBuffers !== undefined ? parameters.rawBuffers : false;
 
   var deferred = Q.defer();
   var rootObject = new THREE.Object3D();
 	var self = this;
 
-  //useWorker = false;
-
-  function onDataLoaded( data )
+  function postProcess( data )
   {
       for(var i=0;i<data.objects.length;i++)
       {
@@ -49,7 +48,7 @@ OBJParser.prototype.parse = function (data, parameters) {
 		    var data = event.data.data;
 		    console.log("data recieved in main thread", data);
 		    //var model = self.createModelBuffers( data );
-        onDataLoaded( data );
+        postProcess( data );
         deferred.resolve( rootObject );
       }
       else if("progress" in event.data)
@@ -66,11 +65,8 @@ OBJParser.prototype.parse = function (data, parameters) {
 	else
 	{
 	  data = new OBJ().getData( data );
-    onDataLoaded( data );
+    postProcess( data );
     deferred.resolve( rootObject );
-	  /*console.log("raw data", data);
-	  data = this.createModelBuffers( data );
-	  deferred.resolve( data );*/
 	}
 
   return deferred;
@@ -106,8 +102,8 @@ OBJParser.prototype.createModelBuffers = function ( modelData ) {
   {
     console.log("fooNormals");
     //TODO: only do this, if no normals were specified???
-    //geometry.computeFaceNormals();
-    //geometry.computeVertexNormals();
+    geometry.computeFaceNormals();
+    geometry.computeVertexNormals();
   }
 
   /*var vs = require('./vertShader.vert')();
@@ -125,7 +121,7 @@ OBJParser.prototype.createModelBuffers = function ( modelData ) {
 
 				} );*/
   var color = this.defaultColor;
-  var material = new this.defaultMaterialType({color:color, specular: 0xffffff, shininess: 10, shading: THREE.FlatShading});//,vertexColors: THREE.VertexColors
+  var material = new this.defaultMaterialType({color:color, specular: 0xffffff, shininess: 2, shading: THREE.FlatShading});//,vertexColors: THREE.VertexColors
   var mesh = new THREE.Mesh( geometry, material );
   return mesh
 }
