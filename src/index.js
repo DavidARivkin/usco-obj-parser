@@ -2,13 +2,35 @@
  * @author mrdoob / http://mrdoob.com/
  * @author kaosat-dev
  */
-var detectEnv = require("composite-detect");
 
-if(detectEnv.isNode) var THREE = require("three");
-if(detectEnv.isBrowser) var THREE = window.THREE;
-if(detectEnv.isModule) var Q = require('q');
+import detectEnv from 'composite-detect'
+import assign from 'fast.js/object/assign'
+import Rx from 'rx'
 
-var OBJ = require("./obj.js");
+import OBJ from './obj'
+
+import {ensureArrayBuffer} from './utils'
+import {createModelBuffers} from './parseHelpers'
+//import {parseSteps} from './parseHelpers'
+
+export const outputs = ["geometry"] //to be able to auto determine data type(s) fetched by parser
+export const inputDataType = "arrayBuffer" //to be able to set required input data type 
+
+// Load CTM compressed models
+export default function parse(data, parameters={}){
+
+  const defaults = {
+    useWorker: (detectEnv.isBrowser===true)
+    ,offsets: [0]
+  }
+  parameters = assign({},defaults,parameters)
+
+  const {useWorker, offsets} = parameters
+  const obs = new Rx.ReplaySubject(1)
+
+
+}
+
 
 OBJParser = function ( manager ) {
   this.defaultMaterialType = THREE.MeshPhongMaterial;//THREE.MeshLambertMaterial; //
@@ -16,15 +38,10 @@ OBJParser = function ( manager ) {
   this.recomputeNormals = true;
 };
 
-OBJParser.prototype = {
-	constructor: OBJParser
-};
+
 
 OBJParser.prototype.parse = function (data, parameters) {
   var parameters = parameters || {};
-  var useBuffers = parameters.useBuffers !== undefined ? parameters.useBuffers : true;
-  var useWorker = parameters.useWorker !== undefined ?  parameters.useWorker && detectEnv.isBrowser: true;
-  var rawBuffers = parameters.rawBuffers !== undefined ? parameters.rawBuffers : false;
 
   var deferred = Q.defer();
   var rootObject = new THREE.Object3D();
@@ -91,6 +108,10 @@ OBJParser.prototype.createModelBuffers = function ( modelData ) {
   vertices.set( modelData._attributes.position );
 	normals.set( modelData._attributes.normal );
 	indices.set( modelData._attributes.indices );
+
+}
+
+
 
 
   var geometry = new THREE.BufferGeometry();
