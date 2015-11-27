@@ -141,8 +141,8 @@ OBJ.prototype.getData = function(text)
 				if(currentObject){//if (!(geometry === undefined)) {
 					face_offset = face_offset + vertices.length;
 
-          console.log("oldobject")
-          console.log( currentObject)
+          //console.log("oldobject")
+          //console.log( currentObject)
           currentObject.faceCount = indices.length;
 
           //reset all for next object
@@ -160,7 +160,7 @@ OBJ.prototype.getData = function(text)
 
 			} else if ( /^g /.test( line ) ) {
 				// group
-				console.log("group");
+				//console.log("group");
 			} else if ( /^usemtl /.test( line ) ) {
 				// material
         currentMaterial.name = line.substring( 7 ).trim();

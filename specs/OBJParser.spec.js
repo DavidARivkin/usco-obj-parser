@@ -1,15 +1,32 @@
-THREE = require("three");
-OBJParser = require("../obj-parser");
-fs = require("fs");
+import assert from 'assert'
+import fs from 'fs'
 
-describe("OBJ parser tests", function() {
-  var parser = new OBJParser();
+//these two are needed by the parser
+import Rx from 'rx'
+import assign from 'fast.js/object/assign'
+
+
+import parse,  {outputs} from '../src/index'
+
+describe("OBJ parser tests", () => {
   
-  it("can parse obj files", function() {
-    data = fs.readFileSync("specs/data/box.obj",'binary')
-    parsedObj = parser.parse(data);
-    expect(parsedObj instanceof THREE.Object3D).toBe(true);
-    expect(parsedObj.children[0].geometry.vertices.length).toEqual(8);
-  });
+  it("can parse obj files", function(done){
+    this.timeout(5000)
+    let data = fs.readFileSync("specs/data/box.obj",'binary')
+    let obs = parse(data) //we get an observable back
+
+    obs
+      .filter( data => (!data.hasOwnProperty("progress")) ) //filter out progress information
+      .forEach(function(parsedGeometry){
+
+        assert.equal( parsedGeometry.indices.length, 36)
+        assert.equal( parsedGeometry.positions.length, 108)
+        assert.equal( parsedGeometry.normals.length , 108)
+        
+        done()
+    })
+  })
   
-});
+})
+
+

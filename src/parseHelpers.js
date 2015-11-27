@@ -1,56 +1,29 @@
-export function createModelBuffers ( file ) {
-  console.log("creating model buffers")
+//TODO: potential candidate for re-use across parsers with a few changes
+export function createModelBuffers ( modelData ) {
+  //console.log("creating model buffers",modelData, modelData._attributes)
 
-  let indices   = file.body.indices
-  let positions = file.body.vertices
-  let normals   = file.body.normals
-  let uvs       = []
-  let colors    = []
+  let faces     = modelData.faceCount
+  let colorSize = 3
 
-  //materials = []
-
-  let uvMaps    = file.body.uvMaps
-  if ( uvMaps !== undefined && uvMaps.length > 0 ) {
-    uvs = uvMaps[ 0 ].uv
-  }
-
-  let attrMaps = file.body.attrMaps
-  if ( attrMaps !== undefined && attrMaps.length > 0 && attrMaps[ 0 ].name === 'Color' ) {
-    colors = attrMaps[ 0 ].attr
-  }
-
-  /*
-    geometry.computeOffsets();
-
-  // compute vertex normals if not present in the CTM model
-  if ( geometry.attributes.normal === undefined ) {
-    geometry.computeVertexNormals();
-  }*/
-
-  return {positions, indices, normals, uvs, colors}
-}
-
-
-/*//TODO: potential candidate for re-use across parsers
-function createModelBuffers = function ( modelData ) {
-  console.log("creating model buffers",modelData, "faces",modelData.faceCount);
-
-  var faces = modelData.faceCount;
-  var colorSize =3;
-
-  var vertices = new Float32Array( faces * 3 * 3 );
-  var normals = new Float32Array( faces * 3 * 3 );
-  //var colors = new Float32Array( faces *3 * colorSize );
-  var indices = new Uint32Array( faces * 3  );
+  let positions = new Float32Array( faces * 3 * 3 )
+  let normals   = new Float32Array( faces * 3 * 3 )
+  //let colors  = new Float32Array( faces *3 * colorSize )
+  let indices   = new Uint32Array( faces * 3  )
 
   //vertices.set( modelData.position );
   //normals.set( modelData.normal );
   //indices.set( modelData.indices );
 
-  vertices.set( modelData._attributes.position );
-  normals.set( modelData._attributes.normal );
-  indices.set( modelData._attributes.indices );
-}*/
+  positions.set( modelData._attributes.position )
+  normals.set( modelData._attributes.normal )
+  indices.set( modelData._attributes.indices )
+
+  //materials = []
+  return {positions, indices, normals}
+}
+
+
+
 
 
 /*
