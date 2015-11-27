@@ -1,12 +1,13 @@
-var OBJ = require("./obj.js");
+import OBJ from './obj'
 
 self.onmessage = function( event ) {
-  var data = event.data;
-  data = data.data;
-
-  var result = new OBJ().getData( data );
   
-  self.postMessage( {data:result} );
-	self.close();
+  let data = event.data
+  data = data.data
+
+  let result = new OBJ().getData( data )
+  
+  self.postMessage( {data:result} )
+	self.close()
 
 }

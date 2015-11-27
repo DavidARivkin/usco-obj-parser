@@ -3,7 +3,7 @@ var OBJ = function () {
 
 OBJ.prototype = {
   constructor: OBJ
-};
+}
 
 OBJ.prototype.parseIndex = function( index, type ) {
 
@@ -203,5 +203,4 @@ OBJ.prototype._unindexData=function( object )
       //resultPositions.push( data. );
   }
 }
-
-module.exports = OBJ;
+export default OBJ
