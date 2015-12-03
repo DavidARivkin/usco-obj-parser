@@ -32,9 +32,12 @@ export default function parse(data, parameters={}){
       if("data" in event.data)
       {
         var data = event.data.data;
-        data.objects.forEach( modelData => {
+        data.objects.forEach( (modelData,index) => {
+          obs.onNext({progress: (index+1)/Object.keys(data.objects).length, total:undefined})
           obs.onNext( createModelBuffers( modelData ) )
-        })        
+        })   
+        obs.onNext({progress: 1, total:undefined}) 
+        obs.onCompleted() 
       }
       else if("progress" in event.data)
       {
@@ -58,6 +61,9 @@ export default function parse(data, parameters={}){
       obs.onNext( createModelBuffers( modelData ) )
     })  
 
+    obs.onNext({progress: 1, total:undefined}) 
+    obs.onCompleted()     
+    
   }
   return obs
 
