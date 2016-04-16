@@ -20,7 +20,7 @@ describe('OBJ parser tests', () => {
       .forEach(function (parsedGeometry) {
         assert.equal(parsedGeometry.indices.length, 36)
         assert.equal(parsedGeometry.positions.length, 108)
-        assert.equal(parsedGeometry.normals.length , 108)
+        assert.equal(parsedGeometry.normals.length, 108)
 
         done()
       })
